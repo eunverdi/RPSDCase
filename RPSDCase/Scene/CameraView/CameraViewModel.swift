@@ -16,7 +16,7 @@ final class CameraViewModel: NSObject {
     var isRecording = false
     let notificationCenter = NotificationCenter.default
     
-    private var userDatasFromDatabase: [PlayerInformationResponseRealm] = []
+    var userDatasFromDatabase: [PlayerInformationResponseRealm] = []
     private var userShotInformation: ShotRealm?
     
     private var userDatasResponse: [PlayerInformationResponse] = [] {
@@ -32,6 +32,9 @@ final class CameraViewModel: NSObject {
                 return realmData
             }
             DatabaseManager.shared.saveData(objects: realmObjects)
+            DispatchQueue.main.async {
+                self.fetchAllDataFromDatabase()
+            }
         }
     }
     
@@ -155,17 +158,13 @@ extension CameraViewModel {
         }
     }
     
-    func fetchAllDataFromDatabase(completion: @escaping ([PlayerInformationResponseRealm]?, Error?) -> Void) {
+    func fetchAllDataFromDatabase() {
         DatabaseManager.shared.fetchAllData(type: PlayerInformationResponseRealm.self) { response, error in
             if let response = response {
                 DispatchQueue.main.async {
                     self.userDatasFromDatabase = Array(response)
-                    completion(self.userDatasFromDatabase, nil)
                 }
             } else if let error = error {
-                DispatchQueue.main.async {
-                    completion(nil, error)
-                }
                 print("An error happened: \(error)")
             }
         }

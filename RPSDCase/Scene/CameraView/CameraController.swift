@@ -17,8 +17,6 @@ final class CameraController: UIViewController {
     var primaryKey: String = ""
     var name: String = ""
     
-    var userDatas: [PlayerInformationResponseRealm] = []
-    
     private lazy var recordButton: UIButton = {
         let button = UIButton()
         button.translatesAutoresizingMaskIntoConstraints = false
@@ -51,24 +49,10 @@ final class CameraController: UIViewController {
         informationView.translatesAutoresizingMaskIntoConstraints = false
         informationView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor).isActive = true
         informationView.alpha = 0
-        fetchAllData()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-    }
-    
-    private func fetchAllData() {
-        viewModel.fetchAllDataFromDatabase { [weak self] response, error in
-            guard let self = self else { return }
-            if let error = error {
-                print(error)
-            }
-            
-            if let response = response {
-                self.userDatas = response
-            }
-        }
     }
     
     private func setupPreviewLayer() {
@@ -79,17 +63,17 @@ final class CameraController: UIViewController {
     }
     
     private func configureInfoView() {
-        let playerIndex = Int.random(in: 0...userDatas.count - 1)
-        let shotsIndex = Int.random(in: 0...userDatas[playerIndex].shots.count - 1)
+        let playerIndex = Int.random(in: 0...viewModel.userDatasFromDatabase.count - 1)
+        let shotsIndex = Int.random(in: 0...viewModel.userDatasFromDatabase.count - 1)
         
-        self.primaryKey = userDatas[playerIndex].shots[shotsIndex].id
-        self.name = "\(userDatas[playerIndex].name) \(userDatas[playerIndex].surname)"
+        self.primaryKey = viewModel.userDatasFromDatabase[playerIndex].shots[shotsIndex].id
+        self.name = "\(viewModel.userDatasFromDatabase[playerIndex].name) \(viewModel.userDatasFromDatabase[playerIndex].surname)"
         DispatchQueue.main.async {
-            self.informationView.pointLabel.text = "\(self.userDatas[playerIndex].shots[shotsIndex].point)"
-            self.informationView.segmentLabel.text = "\(self.userDatas[playerIndex].shots[shotsIndex].segment)"
-            self.informationView.inOutLabel.text = "\(self.userDatas[playerIndex].shots[shotsIndex].inOut)"
-            self.informationView.shotPosXLabel.text = "\(self.userDatas[playerIndex].shots[shotsIndex].shotPosX)"
-            self.informationView.shotPosYLabel.text = "\(self.userDatas[playerIndex].shots[shotsIndex].shotPosY)"
+            self.informationView.pointLabel.text = "\(self.viewModel.userDatasFromDatabase[playerIndex].shots[shotsIndex].point)"
+            self.informationView.segmentLabel.text = "\(self.viewModel.userDatasFromDatabase[playerIndex].shots[shotsIndex].segment)"
+            self.informationView.inOutLabel.text = "\(self.viewModel.userDatasFromDatabase[playerIndex].shots[shotsIndex].inOut)"
+            self.informationView.shotPosXLabel.text = "\(self.viewModel.userDatasFromDatabase[playerIndex].shots[shotsIndex].shotPosX)"
+            self.informationView.shotPosYLabel.text = "\(self.viewModel.userDatasFromDatabase[playerIndex].shots[shotsIndex].shotPosY)"
         }
         
         let notification = Notification(name: Notification.Name(NotificationNames.UserShotInformationNotificationName.rawValue), object: nil, userInfo: ["primary" : self.primaryKey, "name": self.name])
