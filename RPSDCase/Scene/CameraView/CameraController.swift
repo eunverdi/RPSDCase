@@ -64,7 +64,7 @@ final class CameraController: UIViewController {
     
     private func configureInfoView() {
         let playerIndex = Int.random(in: 0...viewModel.userDatasFromDatabase.count - 1)
-        let shotsIndex = Int.random(in: 0...viewModel.userDatasFromDatabase.count - 1)
+        let shotsIndex = Int.random(in: 0...viewModel.userDatasFromDatabase[playerIndex].shots.count - 1)
         
         self.primaryKey = viewModel.userDatasFromDatabase[playerIndex].shots[shotsIndex].id
         self.name = "\(viewModel.userDatasFromDatabase[playerIndex].name) \(viewModel.userDatasFromDatabase[playerIndex].surname)"
