@@ -1,0 +1,6 @@
+framework module Pods_RPSDCaseTests {
+  umbrella header "Pods-RPSDCaseTests-umbrella.h"
+
+  export *
+  module * { export * }
+}
