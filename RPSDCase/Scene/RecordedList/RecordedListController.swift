@@ -76,7 +76,15 @@ extension RecordedListController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
         cell.textLabel?.numberOfLines = 0
-        cell.textLabel?.text = viewModel.videoURLs[indexPath.row].lastPathComponent
+        
+        let videoURL = viewModel.videoURLs[indexPath.row]
+        let creationDate = viewModel.getFileCreationDate(for: videoURL)
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "dd/MM/yyyy HH:mm"
+        let dateString = dateFormatter.string(from: creationDate)
+        
+        cell.textLabel?.text = dateString
         return cell
     }
     

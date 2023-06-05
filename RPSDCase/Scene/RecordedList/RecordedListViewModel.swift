@@ -38,5 +38,18 @@ class RecordedListViewModel {
             print("An error while trying to delete video!")
         }
     }
+    
+    func getFileCreationDate(for url: URL) -> Date {
+        do {
+            let attributes = try FileManager.default.attributesOfItem(atPath: url.path)
+            if let creationDate = attributes[.creationDate] as? Date {
+                return creationDate
+            }
+        } catch {
+            print("Error retrieving file attributes: \(error)")
+        }
+        
+        return Date()
+    }
 }
 
