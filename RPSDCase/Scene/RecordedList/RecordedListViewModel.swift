@@ -20,7 +20,13 @@ class RecordedListViewModel {
             let fileURLs = try FileManager.default.contentsOfDirectory(at: documentsDirectory, includingPropertiesForKeys: nil)
             let videoURLs = fileURLs.filter { $0.pathExtension == "mov" }
             
-            return videoURLs
+            let sortedURLs = videoURLs.sorted(by: { (url1, url2) -> Bool in
+                let creationDate1 = getFileCreationDate(for: url1)
+                let creationDate2 = getFileCreationDate(for: url2)
+                return creationDate1 > creationDate2
+            })
+            
+            return sortedURLs
         } catch {
             print("Error: \(error)")
         }
