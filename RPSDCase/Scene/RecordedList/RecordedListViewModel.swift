@@ -25,9 +25,7 @@ protocol RecordedListViewModelInterface: AnyObject {
 final class RecordedListViewModel {
     
     weak var view: RecordedListInterface?
-    
     private(set) var videoURLs = [URL]()
-
 }
 
 extension RecordedListViewModel: RecordedListViewModelInterface {

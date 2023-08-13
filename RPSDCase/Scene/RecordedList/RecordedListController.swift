@@ -10,6 +10,10 @@ import AVKit
 import RealmSwift
 
 protocol RecordedListInterface: AnyObject {
+    
+    var playerViewController: AVPlayerViewController { get set }
+    var informationView: ShotInformationView { get set }
+    
     func configureInformationView(url: URL)
     func prepareDidLoad()
     func prepareWillAppear()
@@ -19,8 +23,8 @@ class RecordedListController: UIViewController {
     
     var viewModel: RecordedListViewModel = RecordedListViewModel()
     var tableView: UITableView!
-    let playerViewController = AVPlayerViewController()
-    let informationView = ShotInformationView()
+    var playerViewController = AVPlayerViewController()
+    var informationView = ShotInformationView()
     
     override func viewDidLoad() {
         super.viewDidLoad()
