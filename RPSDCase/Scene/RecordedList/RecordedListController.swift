@@ -9,21 +9,75 @@ import UIKit
 import AVKit
 import RealmSwift
 
+protocol RecordedListInterface: AnyObject {
+    func configureInformationView(url: URL)
+    func prepareDidLoad()
+    func prepareWillAppear()
+}
+
 class RecordedListController: UIViewController {
     
-    var viewModel: RecordedListViewModel!
+    var viewModel: RecordedListViewModel = RecordedListViewModel()
     var tableView: UITableView!
     let playerViewController = AVPlayerViewController()
     let informationView = ShotInformationView()
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        viewModel.view = self
+        viewModel.viewDidLoad()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        viewModel.viewWillAppear()
+    }
+}
+
+extension RecordedListController: UITableViewDataSource {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        viewModel.videoURLs.count
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        CellRowHeight.RecordedListCellRowHeight.rawValue
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = viewModel.cellForItem(tableView: tableView, at: indexPath)
+        return cell
+        
+    }
+    
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        viewModel.editingStyle(tableView: tableView, editingStyle: editingStyle, at: indexPath)
+    }
+    
+}
+
+extension RecordedListController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        
+        let videoURL = viewModel.videoURLs[indexPath.row]
+        let player = AVPlayer(url: videoURL)
+        configureInformationView(url: videoURL)
+        playerViewController.player = player
+        UIView.animate(withDuration: 1.1) {
+            self.playerViewController.contentOverlayView?.addSubview(self.informationView)
+        }
+        
+        self.present(playerViewController, animated: true) {
+            self.playerViewController.player!.play()
+        }
+    }
+}
+
+extension RecordedListController: RecordedListInterface {
+    func prepareDidLoad() {
         
         self.title = "Recorded List"
         
-        viewModel = RecordedListViewModel()
         viewModel.loadVideos()
-        
         tableView = UITableView()
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "Cell")
@@ -39,13 +93,12 @@ class RecordedListController: UIViewController {
         ])
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
+    func prepareWillAppear() {
         viewModel.loadVideos()
         tableView.reloadData()
     }
     
-    private func configureInformationView(url: URL) {
+    func configureInformationView(url: URL) {
         let videoFileName = url.lastPathComponent
         
         DatabaseManager.shared.fetchData(withPrimaryKey: videoFileName, objectType: VideoRealm.self) { response in
@@ -58,60 +111,8 @@ class RecordedListController: UIViewController {
                     self.informationView.shotPosYLabel.text = "\(response.shotPosY)"
                 }
             } else {
-                print("An error happened")
+                print("RecordedListController: An error happened")
             }
-        }
-    }
-}
-
-extension RecordedListController: UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return viewModel.videoURLs.count
-    }
-    
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        CellRowHeight.RecordedListCellRowHeight.rawValue
-    }
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
-        cell.textLabel?.numberOfLines = 0
-        
-        let videoURL = viewModel.videoURLs[indexPath.row]
-        let creationDate = viewModel.getFileCreationDate(for: videoURL)
-        
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "dd/MM/yyyy HH:mm"
-        let dateString = dateFormatter.string(from: creationDate)
-        
-        cell.textLabel?.text = dateString
-        return cell
-    }
-    
-    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
-            do {
-                try viewModel.deleteVideo(at: indexPath.row)
-                tableView.deleteRows(at: [indexPath], with: .fade)
-            } catch {
-                print("Error while deleting file: \(error)")
-            }
-        }
-    }
-}
-
-extension RecordedListController: UITableViewDelegate {
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let videoURL = viewModel.videoURLs[indexPath.row]
-        let player = AVPlayer(url: videoURL)
-        configureInformationView(url: videoURL)
-        playerViewController.player = player
-        UIView.animate(withDuration: 1.1) {
-            self.playerViewController.contentOverlayView?.addSubview(self.informationView)
-        }
-        
-        self.present(playerViewController, animated: true) {
-            self.playerViewController.player!.play()
         }
     }
 }
