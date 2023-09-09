@@ -15,11 +15,12 @@ protocol RecordedListInterface: AnyObject {
     var informationView: ShotInformationView { get set }
     
     func configureInformationView(url: URL)
-    func prepareDidLoad()
-    func prepareWillAppear()
+    func prepareViewDidLoad()
+    func prepareViewWillAppear()
+    func didSelectRowAt(at indexPath: IndexPath)
 }
 
-class RecordedListController: UIViewController {
+final class RecordedListController: UIViewController {
     
     var viewModel: RecordedListViewModel = RecordedListViewModel()
     var tableView: UITableView!
@@ -61,7 +62,24 @@ extension RecordedListController: UITableViewDataSource {
 
 extension RecordedListController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
+        viewModel.didSelectRowAt(at: indexPath)
+    }
+}
+
+extension RecordedListController {
+    func configureInformationViewComponents(with model: VideoRealm) {
+        DispatchQueue.main.async {
+            self.informationView.pointLabel.text = "\(model.point)"
+            self.informationView.segmentLabel.text = "\(model.segment)"
+            self.informationView.inOutLabel.text = "\(model.inOut)"
+            self.informationView.shotPosXLabel.text = "\(model.shotPosX)"
+            self.informationView.shotPosYLabel.text = "\(model.shotPosY)"
+        }
+    }
+}
+
+extension RecordedListController: RecordedListInterface {
+    func didSelectRowAt(at indexPath: IndexPath) {
         let videoURL = viewModel.videoURLs[indexPath.row]
         let player = AVPlayer(url: videoURL)
         configureInformationView(url: videoURL)
@@ -74,13 +92,9 @@ extension RecordedListController: UITableViewDelegate {
             self.playerViewController.player!.play()
         }
     }
-}
-
-extension RecordedListController: RecordedListInterface {
-    func prepareDidLoad() {
-        
+    
+    func prepareViewDidLoad() {
         self.title = "Recorded List"
-        
         viewModel.loadVideos()
         tableView = UITableView()
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -97,23 +111,16 @@ extension RecordedListController: RecordedListInterface {
         ])
     }
     
-    func prepareWillAppear() {
+    func prepareViewWillAppear() {
         viewModel.loadVideos()
         tableView.reloadData()
     }
     
     func configureInformationView(url: URL) {
         let videoFileName = url.lastPathComponent
-        
         DatabaseManager.shared.fetchData(withPrimaryKey: videoFileName, objectType: VideoRealm.self) { response in
             if let response = response {
-                DispatchQueue.main.async {
-                    self.informationView.pointLabel.text = "\(response.point)"
-                    self.informationView.segmentLabel.text = "\(response.segment)"
-                    self.informationView.inOutLabel.text = "\(response.inOut)"
-                    self.informationView.shotPosXLabel.text = "\(response.shotPosX)"
-                    self.informationView.shotPosYLabel.text = "\(response.shotPosY)"
-                }
+                self.configureInformationViewComponents(with: response)
             } else {
                 print("RecordedListController: An error happened")
             }

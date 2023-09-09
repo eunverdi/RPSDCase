@@ -14,6 +14,7 @@ protocol RecordedListViewModelInterface: AnyObject {
     func viewWillAppear()
     
     func loadVideos()
+    func didSelectRowAt(at indexPath: IndexPath)
     func fetchVideos() -> [URL]
     func deleteVideo(at index: Int) throws
     func getFileCreationDate(for url: URL) -> Date
@@ -29,6 +30,9 @@ final class RecordedListViewModel {
 }
 
 extension RecordedListViewModel: RecordedListViewModelInterface {
+    func didSelectRowAt(at indexPath: IndexPath) {
+        view?.didSelectRowAt(at: indexPath)
+    }
     
     func loadVideos() {
         videoURLs = fetchVideos()
@@ -79,11 +83,11 @@ extension RecordedListViewModel: RecordedListViewModelInterface {
     }
     
     func viewDidLoad() {
-        view?.prepareDidLoad()
+        view?.prepareViewDidLoad()
     }
     
     func viewWillAppear() {
-        view?.prepareWillAppear()
+        view?.prepareViewWillAppear()
     }
     
     func cellForItem(tableView: UITableView, at indexPath: IndexPath) -> UITableViewCell {

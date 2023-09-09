@@ -114,6 +114,7 @@ class ShotInformationView: UIView {
         addSubview(shotPosXView)
         addSubview(shotPosYView)
         addSubviewLabels()
+        self.translatesAutoresizingMaskIntoConstraints = false
     }
     
     required init?(coder aDecoder: NSCoder) {

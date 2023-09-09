@@ -9,7 +9,15 @@ import UIKit
 import AVFoundation
 import RealmSwift
 
+protocol CameraViewModelInterface: AnyObject {
+    
+    var view: CameraControllerInterface? { get set }
+    func viewDidLoad()
+}
+
 final class CameraViewModel: NSObject {
+    
+    weak var view: CameraControllerInterface?
     
     private(set) var captureSession: AVCaptureSession?
     private var videoOutput: AVCaptureMovieFileOutput?
@@ -169,4 +177,11 @@ extension CameraViewModel {
             }
         }
     }
+}
+
+extension CameraViewModel: CameraViewModelInterface {
+    func viewDidLoad() {
+        view?.prepareViewDidLoad()
+    }
+    
 }

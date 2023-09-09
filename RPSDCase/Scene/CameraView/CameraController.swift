@@ -8,12 +8,18 @@
 import UIKit
 import AVFoundation
 
+protocol CameraControllerInterface: AnyObject {
+
+    var previewLayer: AVCaptureVideoPreviewLayer? { get set }
+    func prepareViewDidLoad()
+}
+
 final class CameraController: UIViewController {
     
-    private var viewModel: CameraViewModel!
-    private var previewLayer: AVCaptureVideoPreviewLayer?
-    private let informationView = ShotInformationView()
-    
+    private var viewModel: CameraViewModel = CameraViewModel()
+    var previewLayer: AVCaptureVideoPreviewLayer?
+   
+    var informationView = ShotInformationView()
     var primaryKey: String = ""
     var name: String = ""
     
@@ -32,23 +38,8 @@ final class CameraController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        viewModel = CameraViewModel()
-        setupPreviewLayer()
-        view.addSubview(recordButton)
-        tabBarController?.delegate = self
-        
-        NSLayoutConstraint.activate([
-            recordButton.widthAnchor.constraint(equalToConstant: 100),
-            recordButton.heightAnchor.constraint(equalToConstant: 100),
-            recordButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            recordButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -30)
-        ])
-        
-        self.view.addSubview(informationView)
-        informationView.translatesAutoresizingMaskIntoConstraints = false
-        informationView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor).isActive = true
-        informationView.alpha = 0
+        viewModel.view = self
+        viewModel.viewDidLoad()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -99,5 +90,29 @@ extension CameraController: UITabBarControllerDelegate {
             viewModel.isRecording = false
         }
     }
+}
+
+extension CameraController: CameraControllerInterface {
+    
+    
+    func prepareViewDidLoad() {
+        setupPreviewLayer()
+        tabBarController?.delegate = self
+        
+        view.addSubview(recordButton)
+        view.addSubview(informationView)
+        
+        NSLayoutConstraint.activate([
+            recordButton.widthAnchor.constraint(equalToConstant: 100),
+            recordButton.heightAnchor.constraint(equalToConstant: 100),
+            recordButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            recordButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -30),
+            
+            informationView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor)
+        ])
+        informationView.alpha = 0
+    }
+    
+    
 }
 
